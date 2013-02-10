@@ -5,9 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 
-namespace Railsrogue
+namespace Railsrogue.Entities
 {
-	public class Terrain
+	public class Terrain : Entity
 	{
 		public class Tile
 		{
@@ -36,7 +36,9 @@ namespace Railsrogue
 		public void LoadContent (ContentManager content)
 		{
 			tileTexture = content.Load<Texture2D> ("tile");
+		}
 
+		public void Initialize () {
 			int numTiles = (int)Math.Ceiling (screenWidth / (float)tileWidth);
 			for (int i = 0; i < numTiles; ++i) {
 				AddNewTile ();

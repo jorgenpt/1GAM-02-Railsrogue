@@ -84,9 +84,13 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Terrain.cs" />
     <Compile Include="RailsrogueGame.cs" />
-    <Compile Include="WizardHero.cs" />
+    <Compile Include="Entities\Sprite.cs" />
+    <Compile Include="Entities\Terrain.cs">
+      <DependentUpon>Terrain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Entities\WizardHero.cs" />
+    <Compile Include="Entities\Entity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -95,5 +99,9 @@
   <Import Project="$(MSBuildExtensionsPath)\Mono\MonoMac\v0.0\Mono.MonoMac.targets" />
   <ItemGroup>
     <Content Include="Content\tile.png" />
+    <Content Include="Content\hero.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Entities\" />
   </ItemGroup>
 </Project>

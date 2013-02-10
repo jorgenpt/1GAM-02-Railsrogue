@@ -1,3 +1,8 @@
 /obj/
 /bin/
 *.userprefs
+.DS_Store
+
+# Should I maybe commit these?
+*.dll
+*.dll.config

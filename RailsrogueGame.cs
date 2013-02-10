@@ -5,6 +5,10 @@
 // Microsoft XNA Community Game Platform
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //-----------------------------------------------------------------------------
+using System.Collections;
+using System.Collections.Generic;
+
+
 #endregion
 
 #region Using Statements
@@ -19,6 +23,8 @@ using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 
+using Railsrogue.Entities;
+
 #endregion
 
 namespace Railsrogue
@@ -28,22 +34,44 @@ namespace Railsrogue
 	/// </summary>
 	public class RailsrogueGame : Game
 	{
-
 	#region Fields
-		GraphicsDeviceManager graphics;
-		SpriteBatch spriteBatch;
-		Terrain terrain;
+		private static RailsrogueGame s_game = null;
+		public static RailsrogueGame Game
+		{
+			get { return s_game; }
+		}
+
+		GraphicsDeviceManager m_graphics;
+		SpriteBatch m_spriteBatch;
+
+		public Terrain Terrain {
+			get;
+			set;
+		}
+
+		public WizardHero Hero {
+			get;
+			set;
+		}
+
+		public List<Entity> Entities {
+			get;
+			set;
+		}
 	#endregion
 
 	#region Initialization
 
 		public RailsrogueGame ()
 		{
-			graphics = new GraphicsDeviceManager (this);
-			
+			s_game = this;
+			Entities = new List<Entity>();
+
+			IsMouseVisible = true;
 			Content.RootDirectory = "Content";
 
-			graphics.IsFullScreen = false;
+			m_graphics = new GraphicsDeviceManager (this);
+			m_graphics.IsFullScreen = false;
 		}
 
 		/// <summary>
@@ -52,9 +80,15 @@ namespace Railsrogue
 		/// </summary>
 		protected override void Initialize ()
 		{
-			terrain = new Terrain(GraphicsDevice.Viewport.Width);
+			Entities.Add (Terrain = new Terrain (GraphicsDevice.Viewport.Width));
+			Entities.Add (Hero = new WizardHero (new Vector2 (5, 398 - 128)));
 
+			// Initialize calls LoadContent.
 			base.Initialize ();
+
+			foreach (Entity entity in Entities) {
+				entity.Initialize ();
+			}
 		}
 
 
@@ -64,9 +98,11 @@ namespace Railsrogue
 		protected override void LoadContent ()
 		{
 			// Create a new SpriteBatch, which can be use to draw textures.
-			spriteBatch = new SpriteBatch (graphics.GraphicsDevice);
+			m_spriteBatch = new SpriteBatch (m_graphics.GraphicsDevice);
 
-			terrain.LoadContent (Content);
+			foreach (Entity entity in Entities) {
+				entity.LoadContent (Content);
+			}
 		}
 
 	#endregion
@@ -80,7 +116,19 @@ namespace Railsrogue
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Update (GameTime gameTime)
 		{
-			terrain.Update (gameTime);
+			KeyboardState state = Keyboard.GetState ();
+			Keys[] keys = state.GetPressedKeys ();
+			foreach (Keys key in keys) {
+				switch (key) {
+				case Keys.Escape:
+					Exit ();
+					break;
+				}
+			}
+
+			foreach (Entity entity in Entities) {
+				entity.Update (gameTime);
+			}
 
 			base.Update (gameTime);
 		}
@@ -92,11 +140,14 @@ namespace Railsrogue
 		protected override void Draw (GameTime gameTime)
 		{
 			// Clear the backbuffer
-			graphics.GraphicsDevice.Clear (Color.CornflowerBlue);
+			m_graphics.GraphicsDevice.Clear (Color.CornflowerBlue);
 
-			spriteBatch.Begin ();
-			terrain.Draw (spriteBatch);
-			spriteBatch.End ();
+			m_spriteBatch.Begin ();
+			// TODO: Layers / ordering.
+			foreach (Entity entity in Entities) {
+				entity.Draw (m_spriteBatch);
+			}
+			m_spriteBatch.End ();
 
 			base.Draw (gameTime);
 		}
