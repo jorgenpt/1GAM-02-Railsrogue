@@ -43,6 +43,8 @@ namespace Railsrogue
 
 		GraphicsDeviceManager m_graphics;
 		SpriteBatch m_spriteBatch;
+		bool m_enumeratingActiveSet;
+		List<Entity> m_entities, m_addedEntities, m_removedEntities;
 
 		public Terrain Terrain {
 			get;
@@ -54,10 +56,6 @@ namespace Railsrogue
 			set;
 		}
 
-		public List<Entity> Entities {
-			get;
-			set;
-		}
 	#endregion
 
 	#region Initialization
@@ -65,7 +63,11 @@ namespace Railsrogue
 		public RailsrogueGame ()
 		{
 			s_game = this;
-			Entities = new List<Entity>();
+			m_entities = new List<Entity>();
+			m_addedEntities = new List<Entity>();
+			m_removedEntities = new List<Entity>();
+
+			m_enumeratingActiveSet = false;
 
 			IsMouseVisible = true;
 			Content.RootDirectory = "Content";
@@ -74,21 +76,67 @@ namespace Railsrogue
 			m_graphics.IsFullScreen = false;
 		}
 
+		public void Add (Entity e)
+		{
+			if (m_enumeratingActiveSet) {
+				m_addedEntities.Add (e);
+			} else {
+				e.LoadContent (Content);
+				m_entities.Add (e);
+				e.Initialize ();
+			}
+		}
+		
+		private void AddPendingEntities ()
+		{
+			foreach (Entity entity in m_addedEntities) {
+				entity.LoadContent (Content);
+			}
+			m_entities.AddRange (m_addedEntities);
+			
+			foreach (Entity entity in m_addedEntities) {
+				entity.Initialize ();
+			}
+			m_addedEntities.Clear ();
+		}
+
+		public void Remove (Entity e)
+		{
+			if (m_enumeratingActiveSet) {
+				m_removedEntities.Add (e);
+			} else {
+				m_entities.Remove (e);
+				e.OnDestroy ();
+			}
+		}
+
+		private void RemovePendingEntities ()
+		{
+			foreach (Entity entity in m_removedEntities) {
+				m_entities.Remove (entity);
+				entity.OnDestroy ();
+			}
+			m_removedEntities.Clear ();
+		}
+
+
 		/// <summary>
 		/// Overridden from the base Game.Initialize. Once the GraphicsDevice is setup,
 		/// we'll use the viewport to initialize some values.
 		/// </summary>
 		protected override void Initialize ()
 		{
-			Entities.Add (Terrain = new Terrain (GraphicsDevice.Viewport.Width));
-			Entities.Add (Hero = new WizardHero (new Vector2 (5, 398 - 128)));
+			m_entities.Add (Terrain = new Terrain (GraphicsDevice.Viewport.Width));
+			m_entities.Add (Hero = new WizardHero (new Vector2 (37, 398 - 64)));
 
+			m_enumeratingActiveSet = true;
 			// Initialize calls LoadContent.
 			base.Initialize ();
 
-			foreach (Entity entity in Entities) {
+			foreach (Entity entity in m_entities) {
 				entity.Initialize ();
 			}
+			m_enumeratingActiveSet = false;
 		}
 
 
@@ -100,7 +148,7 @@ namespace Railsrogue
 			// Create a new SpriteBatch, which can be use to draw textures.
 			m_spriteBatch = new SpriteBatch (m_graphics.GraphicsDevice);
 
-			foreach (Entity entity in Entities) {
+			foreach (Entity entity in m_entities) {
 				entity.LoadContent (Content);
 			}
 		}
@@ -126,13 +174,18 @@ namespace Railsrogue
 				}
 			}
 
-			foreach (Entity entity in Entities) {
+			m_enumeratingActiveSet = true;
+			foreach (Entity entity in m_entities) {
 				entity.Update (gameTime);
 			}
+			m_enumeratingActiveSet = false;
+
+			RemovePendingEntities ();
+			AddPendingEntities ();
 
 			base.Update (gameTime);
 		}
-
+	
 		/// <summary>
 		/// This is called when the game should draw itself. 
 		/// </summary>
@@ -144,9 +197,11 @@ namespace Railsrogue
 
 			m_spriteBatch.Begin ();
 			// TODO: Layers / ordering.
-			foreach (Entity entity in Entities) {
+			m_enumeratingActiveSet = true;
+			foreach (Entity entity in m_entities) {
 				entity.Draw (m_spriteBatch);
 			}
+			m_enumeratingActiveSet = false;
 			m_spriteBatch.End ();
 
 			base.Draw (gameTime);

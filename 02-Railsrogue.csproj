@@ -91,6 +91,7 @@
     </Compile>
     <Compile Include="Entities\WizardHero.cs" />
     <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Entities\Fireball.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -100,6 +101,7 @@
   <ItemGroup>
     <Content Include="Content\tile.png" />
     <Content Include="Content\hero.png" />
+    <Content Include="Content\fireball.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entities\" />

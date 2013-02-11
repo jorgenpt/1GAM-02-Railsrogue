@@ -12,6 +12,8 @@ namespace Railsrogue.Entities
 
 		void Draw (SpriteBatch batch);
 		void Update (GameTime gameTime);
+
+		void OnDestroy ();
 	}
 }
 

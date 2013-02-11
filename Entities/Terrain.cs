@@ -71,6 +71,10 @@ namespace Railsrogue.Entities
 				x += tileWidth;
 			}
 		}
+
+		public void OnDestroy ()
+		{
+		}
 	}
 }
 

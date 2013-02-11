@@ -19,6 +19,10 @@ namespace Railsrogue.Entities
 			get; set;
 		}
 
+		protected RailsrogueGame Game {
+			get { return RailsrogueGame.Game; }
+		}
+
 		public Sprite (string spriteName)
 		{
 			SpriteName = spriteName;
@@ -32,10 +36,16 @@ namespace Railsrogue.Entities
 
 		public virtual void Draw (SpriteBatch batch)
 		{
-			batch.Draw (SpriteTexture, Position, Color.White);
+			Vector2 topLeft = Position;
+			topLeft.X -= SpriteTexture.Width / 2f;
+			topLeft.Y -= SpriteTexture.Height / 2f;
+
+			batch.Draw (SpriteTexture, topLeft, Color.White);
 		}
 
 		public virtual void Initialize () {}
+		public virtual void OnDestroy () {}
+
 		public abstract void Update (GameTime gameTime);
 	}
 }
